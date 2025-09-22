@@ -45,3 +45,16 @@ exports.login = async (req,res)=>{
         res.status(500).json({error:err.message});
     }
 };
+
+exports.getProfile = async (req,res)=>{
+    try{
+        const user = await User.findById(req.user).select("-password");
+        //removing password field before sending back data
+        if(!user){
+            return res.status(404).json({message:"User not found"});
+        }
+        res.json(user);
+    }catch(err){
+        res.status(500).json({error: err.message});
+    }
+};
