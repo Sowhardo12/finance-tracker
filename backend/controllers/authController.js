@@ -58,3 +58,26 @@ exports.getProfile = async (req,res)=>{
         res.status(500).json({error: err.message});
     }
 };
+
+exports.updateProfile = async (req,res)=>{
+    try{
+        const {name,email,password} = req.body;
+        const user = await User.findById(req.user).select("-password");
+        if(!user){
+            return res.status(400).json({message:"User not found"});
+        }
+        //update fields
+        if(name)user.name=name;
+        if(email)user.email=email;
+        //if password
+        if(password){
+            const bcrypt = require("bcryptjs");
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(password,salt);
+        }
+        await user.save();
+        res.json({message:"Profile updated successfully",user});
+    }catch(err){
+        res.status(500).json({error:err.message});
+    }
+};
