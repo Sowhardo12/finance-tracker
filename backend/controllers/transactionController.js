@@ -19,9 +19,24 @@ exports.addTransaction = async (req,res)=>{
 //getting all transactions for logged in user
 exports.getTransactions = async (req,res)=>{
     try{
-        const transactions = await Transaction.find({user: req.user}).sort({date: -1});
-        //sorting by dates 1-> ascending order -1: descending order
+        const {type,category,startDate,endDate} = req.query;
+        //filter transaction without changing the endpoint
+        const query = {userId: req.user.id};
+        if(type)query.type=type;
+        if(category)query.category=category;
+        if(startDate && endDate){
+            query.date={
+                $gte: new Date(startDate),
+                $lte: new Date(endDate),
+            };
+            //this is for transactions of a date range 
+        }
+        const transactions = await Transaction.find(query).sort({date:-1});
         res.json(transactions);
+
+        // const transactions = await Transaction.find({user: req.user}).sort({date: -1});
+        // //sorting by dates 1-> ascending order -1: descending order
+        // res.json(transactions);
     }catch(err){
         res.status(500).json({error: err.message});
     }
